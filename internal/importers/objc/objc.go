@@ -14,6 +14,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"unicode"
@@ -144,10 +145,8 @@ func Import(refs *importers.References) ([]*Named, error) {
 			}
 		}
 	}
-	sdkPathOut, err := exec.Command("xcrun", "--sdk", "iphonesimulator", "--show-sdk-path").CombinedOutput()
-	if err != nil {
-		return nil, err
-	}
+	//FIXME: SDK Place
+	sdkPathOut := "/Applications/Xcode_13.1.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator15.0.sdk"
 	sdkPath := strings.TrimSpace(string(sdkPathOut))
 	var allTypes []*Named
 	typeMap := make(map[string]*Named)
@@ -411,8 +410,10 @@ const (
 // directive. For now, importModules assumes the single umbrella header
 // file Module.framework/Headers/Module.h contains every declaration.
 func importModule(sdkPath, module string, identifiers []string, typeMap map[string]*Named) ([]*Named, error) {
+	//FIXME: Import Module
 	hFile := fmt.Sprintf(sdkPath+frameworksPath+"%s.framework/Headers/%[1]s.h", module)
-	clang := exec.Command("xcrun", "--sdk", "iphonesimulator", "clang", "-cc1", "-triple", "x86_64-apple-ios8.0.0-simulator", "-isysroot", sdkPath, "-ast-dump", "-fblocks", "-fobjc-arc", "-x", "objective-c", hFile)
+	clang := exec.Command("xcrun", "--sdk", "iphonesimulator", "/Applications/Xcode_13.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang", "-cc1", "-triple", "x86_64-apple-ios8.0.0-simulator", "-fgnuc-version=4.2.1", "-isysroot", "/Applications/Xcode_13.1.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator15.0.sdk", "-I/Applications/Xcode_13.1.app./Contents/Developer/usr/lib/llvm-gcc/4.2.1/include", "-I/Applications/Xcode_13.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/13.0.0/include/", "-I/Applications/Xcode_13.1.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator15.0.sdk/usr/include", "-I/Applications/Xcode_13.1.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator15.0.sdk/usr/include/sys", "-ast-dump", "-fblocks", "-fobjc-arc", "-x", "objective-c", "-Wno-everything", hFile)
+	clang.Env = os.Environ()
 	out, err := clang.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("clang failed to parse module: %v: %s", err, out)

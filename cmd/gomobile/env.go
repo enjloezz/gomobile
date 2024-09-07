@@ -499,14 +499,18 @@ func envClang(sdkName string) (clang, cflags string, err error) {
 		return sdkName + "-clang", "-isysroot " + sdkName, nil
 	}
 	cmd := exec.Command("xcrun", "--sdk", sdkName, "--find", "clang")
+	cmd.Env = os.Environ()
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", "", fmt.Errorf("xcrun --find: %v\n%s", err, out)
 	}
 	clang = strings.TrimSpace(string(out))
+	//FIXME: Clang
+	clang = "/Applications/Xcode_13.1.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang"
 
 	cmd = exec.Command("xcrun", "--sdk", sdkName, "--show-sdk-path")
 	out, err = cmd.CombinedOutput()
+	out = []byte("/Applications/Xcode_13.1.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator15.0.sdk")
 	if err != nil {
 		return "", "", fmt.Errorf("xcrun --show-sdk-path: %v\n%s", err, out)
 	}
@@ -679,6 +683,8 @@ var ndk = ndkConfig{
 }
 
 func xcodeAvailable() bool {
-	err := exec.Command("xcrun", "xcodebuild", "-version").Run()
+	cmd := exec.Command("xcrun", "xcodebuild", "-version")
+	cmd.Env = os.Environ()
+	err := cmd.Run()
 	return err == nil
 }
