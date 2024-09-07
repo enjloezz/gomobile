@@ -735,7 +735,7 @@ func (g *ObjcWrapper) goType(t *objc.Type, local bool) string {
 	case objc.Bool:
 		return "bool"
 	case objc.Char:
-		return "byte"
+		return "Byte"
 	case objc.Uchar:
 		return "uint8"
 	case objc.Float:

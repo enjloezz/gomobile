@@ -1326,7 +1326,7 @@ func (g *ObjcGen) objcType(typ types.Type) string {
 			return "int64_t"
 		case types.Uint8:
 			// byte is an alias of uint8, and the alias is lost.
-			return "byte"
+			return "Byte"
 		case types.Uint16:
 			return "uint16_t"
 		case types.Uint32:
@@ -1346,7 +1346,7 @@ func (g *ObjcGen) objcType(typ types.Type) string {
 	case *types.Slice:
 		elem := g.objcType(typ.Elem())
 		// Special case: NSData seems to be a better option for byte slice.
-		if elem == "byte" {
+		if elem == "Byte" {
 			return "NSData* _Nullable"
 		}
 		// TODO(hyangah): support other slice types: NSArray or CFArrayRef.
